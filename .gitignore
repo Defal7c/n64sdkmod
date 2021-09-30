@@ -1,4 +1,6 @@
 *.deb
 debs
 web
+pkgs
+*.pkg.tar.zst
 !loose-debs/*.deb

@@ -1,10 +1,19 @@
 #!/bin/bash
 
+if [ $EUID -ne 0 ]
+then
+    echo "Please run this script as root"
+    exit
+fi
+
+mkdir -p debs
+mkdir -p pkgs
+
 dew_it()
 {
     for var in "$@"
     do
-        sudo dpkg-deb --build packages/$var
+        dpkg-deb --build packages/$var
     done
 }
 
@@ -18,9 +27,7 @@ elif [ -n $1 ]
         choice=$1
 fi
 
-mkdir -p debs
-
-sudo chown -R root:root ./packages
+chown -R root:root ./packages
 
 case $choice in
    "all") dew_it spicy makemask iquesdk n64sdk u64assets root-compatibility-environment rsp-tools vadpcm-tools n64-conv-tools n64graphics libhvq libhvqm libnusys libnustd libnaudio libmus n64manual n64-demos nusys-demos kantan-demos mus-demos tutorial-demos n64sdk-common;;
@@ -51,10 +58,15 @@ case $choice in
    *) echo "Sorry nothing";;
 esac
 
-sudo chown -R $USER:$USER ./packages
-
-mv packages/*.deb debs
 cp loose-debs/*.deb debs
+mv packages/*.deb debs
+
+for file in debs/*.deb
+do
+    debtap -Q $file
+done
+
+mv debs/*.pkg.tar.zst pkgs
 
 if [[ $choice == "all" ]]
     then
